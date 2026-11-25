@@ -1,0 +1,19 @@
+name: hold-check
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+permissions:
+  pull-requests: read
+jobs:
+  hold-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Fail while a hold label is present
+        if: contains(github.event.pull_request.labels.*.name, 'hold')
+        run: |
+          echo "This PR has the 'hold' label. Remove it to merge."
+          exit 1
+      - name: No hold label
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'hold') }}
+        run: echo "No hold label."
