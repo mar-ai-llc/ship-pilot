@@ -78,6 +78,26 @@ class TestVerdict(unittest.TestCase):
         text = receipt(line("SHIP", H) + "\n```\ncode\n```\n" + line("BLOCK", H))
         self.assertEqual(verdict_for_head(text, H), "BLOCK")
 
+    def test_loosely_written_block_wins(self):
+        for block in (
+            "VERDICT: BLOCK at exact `%s`. Tests fail." % H,
+            "**VERDICT: BLOCK at exact `%s`.**" % H,
+            "VERDICT: **BLOCK** at exact `%s`." % H,
+            "VERDICT: SOURCE_BLOCK at exact `%s`." % H,
+            "   " + line("BLOCK", H),
+        ):
+            text = receipt(line("SHIP", H) + "\n\n" + block)
+            self.assertEqual(verdict_for_head(text, H), "BLOCK", block)
+
+    def test_inline_backticks_do_not_open_a_fence(self):
+        text = receipt(line("SHIP", H) + "\n```x``` is broken\n" + line("BLOCK", H))
+        self.assertEqual(verdict_for_head(text, H), "BLOCK")
+
+    def test_block_in_unclosed_fence_counts(self):
+        for before in ("- item\n  ```\n  code\n", "<!--\n```\n-->\n"):
+            text = receipt(line("SHIP", H) + "\n" + before + line("BLOCK", H))
+            self.assertEqual(verdict_for_head(text, H), "BLOCK", before)
+
 
 if __name__ == "__main__":
     unittest.main()
