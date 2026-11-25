@@ -33,6 +33,27 @@ class TestCli(unittest.TestCase):
     def test_wrong_arg_count(self):
         self.assertEqual(main([H]), 2)
 
+    def test_malformed_receipt(self):
+        for item in ("SHIP", {"text": 1, "sha": H}, {"text": "SHIP", "sha": H, "family": ["xai"]}):
+            with self.subTest(item=item):
+                self.assertEqual(main([self.write([item]), H, "anthropic"]), 2)
+
+    def test_deeply_nested_json(self):
+        p = self.write("[" * 100000 + "]" * 100000)
+        self.assertEqual(main([p, H, "anthropic"]), 2)
+
+    def test_blank_author_family(self):
+        p = self.write([])
+        for family in ("", "  "):
+            with self.subTest(family=family):
+                self.assertEqual(main([p, H, family]), 2)
+
+    def test_bad_head_sha(self):
+        p = self.write([])
+        for head in ("e" * 7, "E" * 40):
+            with self.subTest(head=head):
+                self.assertEqual(main([p, head, "anthropic"]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
