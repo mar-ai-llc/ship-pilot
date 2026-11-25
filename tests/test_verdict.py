@@ -93,6 +93,20 @@ class TestVerdict(unittest.TestCase):
         text = receipt(line("SHIP", H) + "\n```x``` is broken\n" + line("BLOCK", H))
         self.assertEqual(verdict_for_head(text, H), "BLOCK")
 
+    def test_standalone_inline_code_line_does_not_hide_block(self):
+        head = "f77befba41348bd37d43042896e24a083a4e25b0"
+        text = "\n".join((
+            "# PR #1 independent review",
+            "",
+            line("SHIP", head),
+            "",
+            "```example```",
+            "",
+            line("BLOCK", head),
+        ))
+        self.assertEqual(parse_verdict(text), ("BLOCK", head))
+        self.assertEqual(verdict_for_head(text, head), "BLOCK")
+
     def test_block_in_unclosed_fence_counts(self):
         for before in ("- item\n  ```\n  code\n", "<!--\n```\n-->\n"):
             text = receipt(line("SHIP", H) + "\n" + before + line("BLOCK", H))
