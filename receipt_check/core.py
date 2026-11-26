@@ -6,7 +6,7 @@ _SHA = re.compile(r"^[0-9a-f]{40}$")
 
 def is_full_sha(value):
     """True only for a full 40-character lowercase hex commit SHA."""
-    return bool(_SHA.match(value or ""))
+    return bool(_SHA.fullmatch(value or ""))
 
 
 def classify(text):

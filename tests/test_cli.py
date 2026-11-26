@@ -48,6 +48,23 @@ class TestCli(unittest.TestCase):
             with self.subTest(family=family):
                 self.assertEqual(main([p, H, family]), 2)
 
+    def test_padded_author_family_does_not_vote(self):
+        p = self.write([{"text": "SHIP", "sha": H, "family": "anthropic"}, {"text": "SHIP", "sha": H, "family": "xai"}])
+        for family in ("anthropic", "anthropic ", "anthropic\n"):
+            with self.subTest(family=family):
+                self.assertEqual(main([p, H, family]), 1)
+
+    def test_head_with_trailing_newline(self):
+        head = H + "\n"
+        p = self.write([{"text": "SHIP", "sha": head, "family": "openai"}, {"text": "SHIP", "sha": head, "family": "xai"}])
+        self.assertEqual(main([p, head, "anthropic"]), 2)
+
+    def test_non_string_arguments(self):
+        p = self.write([{"text": "SHIP", "sha": H, "family": "anthropic"}, {"text": "SHIP", "sha": H, "family": "xai"}])
+        for argv in ([p, H, None], [p, H, b"anthropic"], [p, 1, "anthropic"], [None, H, "anthropic"]):
+            with self.subTest(argv=argv[1:]):
+                self.assertEqual(main(argv), 2)
+
     def test_bad_head_sha(self):
         p = self.write([])
         for head in ("e" * 7, "E" * 40):

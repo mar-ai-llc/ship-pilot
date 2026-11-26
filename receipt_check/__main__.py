@@ -4,7 +4,8 @@ RECEIPTS.json is a list of {"text", "sha", "family"} objects (synthetic data).
 Prints ELIGIBLE or NOT ELIGIBLE. Exit codes: 0 eligible, 1 not eligible,
 2 bad input (unreadable file, not a JSON list of objects, a text, sha or family
 that is not a string or null, HEAD_SHA not a full lowercase SHA, blank
-AUTHOR_FAMILY, wrong argument count).
+AUTHOR_FAMILY, an argument that is not a string, wrong argument count).
+Whitespace around AUTHOR_FAMILY is ignored.
 """
 import json
 import sys
@@ -24,11 +25,15 @@ def main(argv=None):
     if len(argv) != 3:
         print(__doc__.strip().splitlines()[0], file=sys.stderr)
         return 2
+    if not all(isinstance(arg, str) for arg in argv):
+        print("bad input: arguments must be strings", file=sys.stderr)
+        return 2
     path, head, family = argv
+    family = family.strip()
     if not is_full_sha(head):
         print("bad input: HEAD_SHA must be a full lowercase SHA", file=sys.stderr)
         return 2
-    if not family.strip():
+    if not family:
         print("bad input: AUTHOR_FAMILY must not be blank", file=sys.stderr)
         return 2
     try:
